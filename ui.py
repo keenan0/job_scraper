@@ -25,7 +25,8 @@ class JobUI:
         self.search_service = search_service
         self.root.title("MDS - Job Scraper")
         
-        self.style = tb.Style('darkly')
+        #self.style = tb.Style('darkly') # flatly
+        self.style = tb.Style()
         self.style.configure('.', font=(FONT_FAMILY, FONT_SIZE))
         self.style.configure('TButton', font=(FONT_FAMILY, FONT_SIZE_BOLD, 'bold'))
         self.style.configure('TLabel', font=(FONT_FAMILY, FONT_SIZE_BOLD))
@@ -33,7 +34,7 @@ class JobUI:
         # ==== Top Frame ====
         self.frame = tb.Frame(root, padding=10)
         self.frame.pack(fill=tk.X)
-        self.add_link_button = tb.Button(self.frame, text="+ Add Link", width=12, command=self.show_add_link_form)
+        self.add_link_button = tb.Button(self.frame, text="+ Add Link", width=12, command=self.callback_add_search_form)
         self.add_link_button.pack(side=tk.LEFT)
 
         # ==== Horizontal Container ====
@@ -46,13 +47,13 @@ class JobUI:
         self.label_search_list = tk.Label(self.left_frame, text="Search List", padx=10, pady=10, font=(FONT_FAMILY, FONT_SIZE))
         self.label_search_list.pack(fill=tk.BOTH)
 
-        self.search_listbox = tk.Listbox(self.left_frame, width=25, font=(FONT_FAMILY, FONT_SIZE - 6))
+        self.search_listbox = tk.Listbox(self.left_frame, width=25, font=(FONT_FAMILY, FONT_SIZE - 4))
         self.search_listbox.bind("<<ListboxSelect>>", self.on_select_search)
         self.search_listbox.pack(fill=tk.BOTH, expand=True)
 
         self.container.add(self.left_frame)
 
-        # ==== Right: Job Details + Add Link Form ====
+        # ==== Right Frame ====
         self.right_frame = tb.Frame(self.container, padding=10)
         self.container.add(self.right_frame)
 
@@ -79,94 +80,160 @@ class JobUI:
         tb.Combobox(self.search_service_form, textvariable=self.search_freq,
                     values=["30 Minutes", "1 Hour", "6 Hours"], width=48, state="readonly").pack(anchor="center", pady=5)
 
-        tb.Button(self.search_service_form, text="Add Search", bootstyle=tb.SUCCESS, command=lambda: (self.search_service.add_search(self.search_service_link.get(), self.search_freq.get(), self.search_platform.get(), self.search_service_title.get()),self.update_search_listbox(),self.hide_add_link_form())).pack(anchor="center", pady=10)
+        tb.Button(self.search_service_form, text="Add Search", bootstyle=tb.SUCCESS, command=self.callback_add_new_search).pack(anchor="center", pady=10)
 
-        # Job Details Section
-        self.job_detail_frame = tb.Frame(self.right_frame, padding=10)
-        self.job_detail_frame.pack(fill=tk.BOTH, expand=True)
+        # Custom Job Listbox for a selected Search
+        self.job_listbox_canvas = tk.Canvas(self.right_frame, bg="lightblue")
+        self.job_listbox_scrollbar = tk.Scrollbar(self.right_frame, orient="vertical", command=self.job_listbox_canvas.yview)
 
-        self.title_label = tb.Label(self.job_detail_frame, text="", font=(FONT_FAMILY, 18, "bold"))
-        self.title_label.pack(anchor="w", pady=(0, 5))
+        # Configurăm canvas-ul să ocupe tot spațiul disponibil
+        self.job_listbox_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.job_listbox_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.company_label = tb.Label(self.job_detail_frame, text="", font=(FONT_FAMILY, FONT_SIZE))
-        self.company_label.pack(anchor="w", pady=(0, 5))
+        # Frame-ul scrollabil trebuie să aibă lățimea configurabilă pentru a se extinde
+        self.job_listbox_scrollable_frame = tk.Frame(self.job_listbox_canvas, bg="lightblue")
+        self.job_listbox_scrollable_frame.bind("<Configure>", lambda e: self._configure_scroll_region())
 
-        self.link_frame = tb.Frame(self.job_detail_frame)
-        self.link_frame.pack(anchor="w", pady=(0, 10))
+        # Adăugăm event-urile pentru mouse wheel scroll
+        self.job_listbox_canvas.bind("<Enter>", self._bind_to_mousewheel)
+        self.job_listbox_canvas.bind("<Leave>", self._unbind_from_mousewheel)
 
-        self.link_button = tb.Button(self.link_frame, text="See Job", bootstyle="info", command=lambda: None)
-        self.favorite_button = tb.Button(self.link_frame, text="Save Job", bootstyle="danger", command=lambda: None)
+        # Creăm fereastra în canvas și obținem ID-ul pentru a-l putea actualiza mai târziu
+        self.frame_window_id = self.job_listbox_canvas.create_window(
+            (0, 0), 
+            window=self.job_listbox_scrollable_frame, 
+            anchor="nw",
+        )
 
-        self.description_text = tk.Text(self.job_detail_frame, wrap=tk.WORD, font=(FONT_FAMILY, FONT_SIZE_BOLD),
-                                        height=10, width=60)
-        self.description_text.bind("<Key>", lambda e: "break")
+        self.job_listbox_canvas.configure(yscrollcommand=self.job_listbox_scrollbar.set)
 
-        self.hide_description()
+        # Adăugăm un event pentru când canvas-ul își schimbă dimensiunea
+        self.job_listbox_canvas.bind("<Configure>", self._configure_canvas)
+
+    
+
+    # Other Utility Functions
+    def _configure_scroll_region(self):
+        """Actualizează regiunea de scroll a canvas-ului pentru a include tot conținutul frame-ului"""
+        self.job_listbox_canvas.configure(scrollregion=self.job_listbox_canvas.bbox("all"))
+
+    def _configure_canvas(self, event):
+        """Ajustează lățimea ferestrei create în canvas pentru a se potrivi cu lățimea canvas-ului"""
+        # Setează lățimea frame-ului scrollabil la lățimea canvas-ului
+        canvas_width = event.width
+        self.job_listbox_canvas.itemconfig(self.frame_window_id, width=canvas_width)
+    
+
+    def _bind_to_mousewheel(self, event):
+        print("ENTERED")
+        """Bind mousewheel events to canvas when mouse enters the canvas area"""
+        # Pentru Windows
+        self.job_listbox_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        # Pentru Linux
+        self.job_listbox_canvas.bind_all("<Button-4>", self._on_mousewheel)
+        self.job_listbox_canvas.bind_all("<Button-5>", self._on_mousewheel)
+    
+    def _unbind_from_mousewheel(self, event):
+        print("EXITED")
+        """Unbind mousewheel events when mouse leaves the canvas area"""
+        # Pentru Windows
+        self.job_listbox_canvas.unbind_all("<MouseWheel>")
+        # Pentru Linux
+        self.job_listbox_canvas.unbind_all("<Button-4>")
+        self.job_listbox_canvas.unbind_all("<Button-5>")
+    
+    def _on_mousewheel(self, event):
+        """Handle mousewheel scrolling"""
+        # Pentru Windows
+        if event.num == 5 or event.delta < 0:
+            self.job_listbox_canvas.yview_scroll(1, "units")
+        # Pentru Linux
+        elif event.num == 4 or event.delta > 0:
+            self.job_listbox_canvas.yview_scroll(-1, "units")
+
+
+
+    # SHOW/HIDE
+    def hide_add_link_form(self):
+        self.search_service_form.pack_forget()
+        self.add_link_button.config(text="+ Add Link", bootstyle=tb.PRIMARY, command=self.callback_add_search_form)
+        self.right_frame.update()
+
+    def show_add_link_form(self):
+        self.search_service_form.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.add_link_button.config(text="x", bootstyle=tb.DANGER, command=self.hide_add_link_form)
+
+
+
+    def hide_job_listbox(self): 
+        self.job_listbox_canvas.pack_forget()
+        self.job_listbox_scrollbar.pack_forget()
+        self.right_frame.update()
+
+
+    def show_job_listbox(self):
+        self.job_listbox_canvas.pack(side="left", fill="both", expand=True)
+        self.job_listbox_scrollbar.pack(side="right", fill="y")
+
+
+    # UTILITY
+
+    def callback_add_search_form(self):
+        self.show_add_link_form()
+        self.hide_job_listbox()
+
+    def callback_add_new_search(self):
+        self.search_service.add_search(self.search_service_link.get(), self.search_freq.get(), self.search_platform.get(), self.search_service_title.get())
+        self.update_search_listbox()
+
+        self.hide_add_link_form()
+
+    def create_job_card(self, parent, title, company, location, link):
+        # Creăm un frame pentru card care va ocupa toată lățimea disponibilă
+        card = tk.Frame(parent, padx=10, pady=10, relief="raised", borderwidth=1, bg="white")
+        
+        # Folosim pack cu fill=tk.X pentru a ocupa toată lățimea disponibilă
+        card.pack(fill=tk.X, expand=True, padx=5, pady=5)
+        
+        # Adăugăm elementele cardului
+        tk.Label(card, text=title, font=('Arial', 14, 'bold'), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
+        tk.Label(card, text=company, font=('Arial', 12), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
+        tk.Label(card, text=location, font=('Arial', 12, 'italic'), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
+        
+        # Butoanele
+        button_frame = tk.Frame(card, bg="white")
+        tk.Button(button_frame, text="Salvează", padx=10).pack(side="left", padx=(0, 5))
+        tk.Button(button_frame, text="Deschide job", command=lambda: self.open_link(link), padx=10).pack(side="left")
+        button_frame.pack(anchor='w', pady=(5, 0))
+        
+        return card
+
+    def show_search_jobs(self):
+        self.search_service_form.pack_forget()
+        self.job_detail_frame.pack(fill=tb.BOTH)
 
     def update_search_listbox(self):
         self.search_listbox.delete(0, tk.END)
         for search in self.search_service.searches:
             self.search_listbox.insert(tk.END, str(search))  
 
-    def hide_add_link_form(self):
-        self.search_service_form.pack_forget()
-        self.add_link_button.config(text="+ Add Link", bootstyle=tb.PRIMARY, command=self.show_add_link_form)
-
-    def show_add_link_form(self):
-        self.search_service_form.pack(fill=tk.BOTH, expand=False, padx=10, pady=10)
-        self.add_link_button.config(text="x", bootstyle=tb.DANGER, command=self.hide_add_link_form)
-
-    def on_search(self):
-        url = self.url_var.get()
-        self.update_job_list()
-
-        self.hide_description()
-        self.description_text.delete(1.0, tk.END)
-        self.description_text.pack_forget()
-        threading.Thread(target=self.scrape_thread, args=(url,)).start()
-
     def scrape_thread(self, url):
-        # jobs = scrape_jobs(url)
-        # job_objects = [Job(job.title, job.company, job.location, job.link, job.description) for job in jobs]
-
-        # self.search_service.add_search(job_objects)
-        # self.update_job_list()
         pass
 
     def on_select_search(self, event):
+        self.hide_add_link_form()
+        self.show_job_listbox()
+
         selection = event.widget.curselection()
         if selection:
             index = selection[0]
             selected_search = self.search_service.searches[index]
 
-        print(selected_search)
+        for job in selected_search.get_jobs():
+            card = self.create_job_card(self.job_listbox_scrollable_frame, job.title, job.company, job.location, job.link)
+            card.pack(fill="x", pady=5, padx=10)
 
-    # def on_select(self, event):
-    #     idx = self.job_listbox.curselection()
-    #     if not idx:
-    #         self.hide_description()
-    #         return
-    #     job = self.search_service.searches[idx[0]]
-    #     self.search_service.select_job(idx[0])
-
-    #     self.title_label.config(text=job.title)
-    #     self.company_label.config(text=job.company)
-    #     self.link_button.config(command=lambda: self.open_link(job.link))
-    #     if not self.link_button.winfo_ismapped():
-    #         self.link_button.pack(side=tb.LEFT, padx=5)
-
-    #     self.favorite_button.config(command=lambda: self.toggle_saved(self.job_manager.selected_job))
-    #     self.favorite_button.config(text=f"{'Save Job' if not self.job_manager.selected_job.saved else 'Remove Job'}")
-    #     self.favorite_button.pack(side=tb.LEFT, padx=5)
-        
-    #     self.description_text.pack(anchor="w", fill=tk.BOTH, expand=True)
-    #     self.description_text.delete(1.0, tk.END)
-    #     self.description_text.insert(tk.END, job.description)
-
-    def toggle_saved(self, current_job):
-        current_job.saved = not current_job.saved
-        self.job_manager.save_job(current_job)
-        self.favorite_button.config(text=f"{'Save Job' if not current_job.saved else 'Remove Job'}")
+        print(selected_search.get_jobs())
 
     def open_link(self, url):
         try:
@@ -174,17 +241,6 @@ class JobUI:
         except:
             pyperclip.copy(url)
             msgbox.showinfo("Link copied", f"Couldn't open browser.\nLink copied to clipboard:\n{url}")
-
-    def hide_description(self):
-        self.title_label.config(text="")
-        self.company_label.config(text="")
-        self.link_button.pack_forget()
-        self.favorite_button.pack_forget()
-        self.description_text.delete(1.0, tk.END)
-        self.job_detail_frame.pack_forget()
-
-    def show_description(self):
-        self.job_detail_frame.pack(fill=tk.BOTH, expand=True)
 
 
 

@@ -35,5 +35,26 @@ template_jobs = [
         location="Cupertino, CA",
         link="https://www.linkedin.com/jobs/view/5",
         description="Lead cross-functional teams to deliver innovative products."
+    ),
+    Job(
+        title="Product Manager",
+        company="Apple",
+        location="Cupertino, CA",
+        link="https://www.linkedin.com/jobs/view/5",
+        description="Lead cross-functional teams to deliver innovative products."
+    ),
+    Job(
+        title="Product Manager",
+        company="Apple",
+        location="Cupertino, CA",
+        link="https://www.linkedin.com/jobs/view/5",
+        description="Lead cross-functional teams to deliver innovative products."
+    ),
+    Job(
+        title="Product Manager",
+        company="Apple",
+        location="Cupertino, CA",
+        link="https://www.linkedin.com/jobs/view/5",
+        description="Lead cross-functional teams to deliver innovative products."
     )
 ]
