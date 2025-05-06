@@ -1,4 +1,4 @@
-from job_model import Job
+from src.Models.job_model import Job
 
 template_jobs = [
     Job(

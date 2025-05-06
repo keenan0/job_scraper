@@ -1,14 +1,12 @@
 import ttkbootstrap as tb
 import tkinter as tk
 from tkinter import StringVar
-from job_model import Job
-from scraper import scrape_jobs
 import threading
 import webbrowser
 import tkinter.messagebox as msgbox
 import pyperclip
 from config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
-from Models.Search import Search
+from src.Models.Search import Search
 
 class SearchService:
     def __init__(self):

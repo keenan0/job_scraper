@@ -1,6 +1,6 @@
 from Search import *
 
-class Search_eJobs(Search):
+class EjobsSearch(Search):
     def job_search(self):
 
         base_url = self.link
