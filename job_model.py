@@ -1,5 +1,5 @@
 class Job:
-    def __init__(self, title, company, location, link, description):
+    def __init__(self, title, company, location, link, description = None):
         self.title = title
         self.company = company
         self.location = location

@@ -1,0 +1,59 @@
+@startuml
+
+class JobApp {
+  -SearchService : SearchService
+  -jobUI : JobUI
+  +__init__()
+  
+}
+class SearchService {
+  
+  -search: List<Search>
+  +addSearch(search: Search)
+  +removeSearch(search: Search)
+  
+}
+class JobUI {
+  -jobManager : JobManager
+  +displayJobs()
+  +addJobUI()
+  +removeJobUI()
+}
+
+abstract class Search {
+  -jobList : List<Job>
+  -platform: String
+  -link : String
+  -name : String
+  -frequency : int
+  -active: boolean
+  +activate_deactivate()
+  +{abstract} job_search()
+  
+}
+class HipoSearch extends Search {
+  +job_search() override
+}
+class LinkedInSearch extends Search {
+  +job_search() override
+}
+class EjobsSearch extends Search {
+  +job_search() override
+}
+
+class Job   {
+  -title : String
+  -company: String
+  -location: String
+  -link: String
+  -description: String
+  -saved: boolean
+  +__init__() 
+}
+JobApp "1" *-- "1" SearchService : uses >
+JobApp "1" *-- "1" JobUI : displays through >
+
+SearchService "1" o-- "*" Search : manages >
+Search "1" *-- "*" Job : generates >
+
+@enduml
