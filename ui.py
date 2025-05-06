@@ -8,20 +8,7 @@ import webbrowser
 import tkinter.messagebox as msgbox
 import pyperclip
 from config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
-
-class Search:
-    def __init__(self, title, link, platform, frequency):
-        self.title = title
-        self.link = link
-        self.platform = platform
-        self.frequency = frequency
-
-    def __str__(self):
-        return f"{self.title} {self.link}"
-    
-    def __repr__(self):
-        return f"{self.title} {self.link}"
-
+from Models.Search import Search
 
 class SearchService:
     def __init__(self):
@@ -92,7 +79,7 @@ class JobUI:
         tb.Combobox(self.search_service_form, textvariable=self.search_freq,
                     values=["30 Minutes", "1 Hour", "6 Hours"], width=48, state="readonly").pack(anchor="center", pady=5)
 
-        tb.Button(self.search_service_form, text="Add Search", bootstyle=tb.SUCCESS, command=lambda: (self.search_service.add_search(self.search_service_title.get(), self.search_service_link.get(), self.search_platform.get(), self.search_freq.get()),self.update_search_listbox(),self.hide_add_link_form())).pack(anchor="center", pady=10)
+        tb.Button(self.search_service_form, text="Add Search", bootstyle=tb.SUCCESS, command=lambda: (self.search_service.add_search(self.search_service_link.get(), self.search_freq.get(), self.search_platform.get(), self.search_service_title.get()),self.update_search_listbox(),self.hide_add_link_form())).pack(anchor="center", pady=10)
 
         # Job Details Section
         self.job_detail_frame = tb.Frame(self.right_frame, padding=10)
