@@ -12,10 +12,17 @@ from config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
 class JobManager:
     def __init__(self):
         self.jobs = []
+        self.saved_jobs = []
         self.selected_job = None
 
     def add_jobs(self, jobs):
         self.jobs.extend(jobs)
+
+    def save_job(self, job):
+        if job is None:
+            return
+
+        self.saved_jobs.extend([job])
 
     def select_job(self, idx):
         if idx is None:
@@ -35,7 +42,7 @@ class JobUI:
         self.job_manager = job_manager
         self.root.title("MDS - Job Scraper")
         
-        self.style = tb.Style('flatly')
+        self.style = tb.Style('darkly')
         self.style.configure('.', font=(FONT_FAMILY, FONT_SIZE))
         self.style.configure('TButton', font=(FONT_FAMILY, FONT_SIZE_BOLD, 'bold'))
         self.style.configure('TLabel', font=(FONT_FAMILY, FONT_SIZE_BOLD))
@@ -73,6 +80,8 @@ class JobUI:
 
         self.link_button = tb.Button(self.link_frame, text="See Job", bootstyle="info", command=lambda: None)
 
+        self.favorite_button = tb.Button(self.link_frame, text=f"{'Save Job' if self.job_manager.selected_job is None else 'Remove Job'}", bootstyle="danger", command=lambda: None)
+
         self.description_text = tk.Text(self.job_detail_frame, wrap=tk.WORD, font=(FONT_FAMILY, FONT_SIZE_BOLD), height=10, width=60)
         self.description_text.bind("<Key>", lambda e: "break")
         self.hide_description()
@@ -80,14 +89,13 @@ class JobUI:
         """End Horizontal Search Container"""
 
     def update_job_list(self):
-        """Actualizează lista de joburi din UI."""
         self.job_listbox.delete(0, tk.END)
         for job in self.job_manager.jobs:
             self.job_listbox.insert(tk.END, job.title)
 
     def on_search(self):
         url = self.url_var.get()
-        self.job_manager.clear()  # Golește lista de joburi
+        self.job_manager.clear()
         self.update_job_list()
 
         self.hide_description()
@@ -96,7 +104,6 @@ class JobUI:
         threading.Thread(target=self.scrape_thread, args=(url,)).start()
 
     def scrape_thread(self, url):
-        """Scrapează joburile și le adaugă în JobManager."""
         jobs = scrape_jobs(url)
         job_objects = [Job(job.title, job.company, job.location, job.link, job.description) for job in jobs]
 
@@ -115,11 +122,20 @@ class JobUI:
         self.company_label.config(text=job.company)
         self.link_button.config(command=lambda: self.open_link(job.link))
         if not self.link_button.winfo_ismapped():
-            self.link_button.pack()
+            self.link_button.pack(side=tb.LEFT, padx=5)
 
+        self.favorite_button.config(command=lambda: self.toggle_saved(self.job_manager.selected_job))
+        self.favorite_button.config(text=f"{'Save Job' if not self.job_manager.selected_job.saved else 'Remove Job'}")
+        self.favorite_button.pack(side=tb.LEFT, padx=5)
+        
         self.description_text.pack(anchor="w", fill=tk.BOTH, expand=True)
         self.description_text.delete(1.0, tk.END)
         self.description_text.insert(tk.END, job.description)
+
+    def toggle_saved(self, current_job):
+        current_job.saved = not current_job.saved
+        self.job_manager.save_job(current_job)
+        self.favorite_button.config(text=f"{'Save Job' if not current_job.saved else 'Remove Job'}")
 
     def open_link(self, url):
         try:
@@ -132,6 +148,7 @@ class JobUI:
         self.title_label.config(text="")
         self.company_label.config(text="")
         self.link_button.pack_forget()
+        self.favorite_button.pack_forget()
         self.description_text.delete(1.0, tk.END)
         self.job_detail_frame.pack_forget()
 
