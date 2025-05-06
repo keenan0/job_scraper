@@ -1,11 +1,14 @@
 from job_model import *
+from bs4 import BeautifulSoup
+import requests
+import time
 
 class Search:
     def __init__(self, link, frequency, platform, name):
         self.link = link
         self.frequency = frequency
         self.platform = platform
-        self.jobs = []
+        self.jobs = {}
         self.name = name
         self.active = True
         with open('Data/searches.json', 'a') as f:
@@ -17,4 +20,7 @@ class Search:
         else:
             self.active = True
         return self.active
+
+    def job_search(self):
+        pass
 
