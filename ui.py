@@ -9,37 +9,33 @@ import tkinter.messagebox as msgbox
 import pyperclip
 from config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
 
-class JobManager:
+class Search:
+    def __init__(self, title, link, platform, frequency):
+        self.title = title
+        self.link = link
+        self.platform = platform
+        self.frequency = frequency
+
+    def __str__(self):
+        return f"{self.title} {self.link}"
+    
+    def __repr__(self):
+        return f"{self.title} {self.link}"
+
+
+class SearchService:
     def __init__(self):
-        self.jobs = []
-        self.saved_jobs = []
-        self.selected_job = None
+        self.searches = [] 
 
-    def add_jobs(self, jobs):
-        self.jobs.extend(jobs)
-
-    def save_job(self, job):
-        if job is None:
-            return
-
-        self.saved_jobs.extend([job])
-
-    def select_job(self, idx):
-        if idx is None:
-            self.selected_job = None
-        else:
-            self.selected_job = self.jobs[idx]
-
-    def clear(self):
-        self.jobs = []
-        self.selected_job = None
+    def add_search(self, title, link, platform, frequency):
+        self.searches.extend([Search(title, link, platform, frequency)])
 
 
 
 class JobUI:
-    def __init__(self, root, job_manager):
+    def __init__(self, root, search_service):
         self.root = root
-        self.job_manager = job_manager
+        self.search_service = search_service
         self.root.title("MDS - Job Scraper")
         
         self.style = tb.Style('darkly')
@@ -47,27 +43,60 @@ class JobUI:
         self.style.configure('TButton', font=(FONT_FAMILY, FONT_SIZE_BOLD, 'bold'))
         self.style.configure('TLabel', font=(FONT_FAMILY, FONT_SIZE_BOLD))
 
-        """Main Frame - (Input Field + Search Button)"""
-        self.frame = tb.Frame(root, padding=5)
-        self.frame.pack(fill=tk.BOTH, expand=False)
+        # ==== Top Frame ====
+        self.frame = tb.Frame(root, padding=10)
+        self.frame.pack(fill=tk.X)
+        self.add_link_button = tb.Button(self.frame, text="+ Add Link", width=12, command=self.show_add_link_form)
+        self.add_link_button.pack(side=tk.LEFT)
 
-        self.url_var = StringVar()
-        tb.Entry(self.frame, textvariable=self.url_var, width=60).pack(side=tk.LEFT, padx=5)
-        tb.Button(self.frame, text="Search", bootstyle=tb.PRIMARY, style="TButton",command=self.on_search).pack(side=tk.LEFT)
-
-        """End Main Frame"""
-
-        """Horizontal Search Container - Job List + Job Controls"""
+        # ==== Horizontal Container ====
         self.container = tb.PanedWindow(self.root, orient=tk.HORIZONTAL)
         self.container.pack(fill=tk.BOTH, expand=True)
 
-        self.job_listbox = tk.Listbox(self.container, width=25, font=(FONT_FAMILY, FONT_SIZE))
-        self.job_listbox.bind("<<ListboxSelect>>", self.on_select)
-        self.container.add(self.job_listbox)
+        # ==== Left: Listbox ====
+        self.left_frame = tb.Frame(self.container, padding=10)
 
-        """Job Details + Controls"""
-        self.job_detail_frame = tb.Frame(self.container, padding=10)
-        self.container.add(self.job_detail_frame)
+        self.label_search_list = tk.Label(self.left_frame, text="Search List", padx=10, pady=10, font=(FONT_FAMILY, FONT_SIZE))
+        self.label_search_list.pack(fill=tk.BOTH)
+
+        self.search_listbox = tk.Listbox(self.left_frame, width=25, font=(FONT_FAMILY, FONT_SIZE - 6))
+        self.search_listbox.bind("<<ListboxSelect>>", self.on_select_search)
+        self.search_listbox.pack(fill=tk.BOTH, expand=True)
+
+        self.container.add(self.left_frame)
+
+        # ==== Right: Job Details + Add Link Form ====
+        self.right_frame = tb.Frame(self.container, padding=10)
+        self.container.add(self.right_frame)
+
+        # Add Link Form (Hidden by Default)
+        self.search_service_form = tb.Frame(self.right_frame, padding=5)
+        self.search_service_title = StringVar()
+        self.search_service_link = StringVar()
+        self.search_platform = StringVar(value="LinkedIn")
+        self.search_freq = StringVar(value="30 Minutes")
+
+        tb.Label(self.search_service_form, text="Start a new search", font=(FONT_FAMILY, 22)).pack(anchor="center", pady=25)
+
+        tb.Label(self.search_service_form, text="Job Title").pack(anchor="center")
+        tb.Entry(self.search_service_form, textvariable=self.search_service_title, width=50).pack(anchor="center", pady=5)
+
+        tb.Label(self.search_service_form, text="Job Link").pack(anchor="center")
+        tb.Entry(self.search_service_form, textvariable=self.search_service_link, width=50).pack(anchor="center", pady=5)
+
+        tb.Label(self.search_service_form, text="Platform").pack(anchor="center")
+        tb.Combobox(self.search_service_form, textvariable=self.search_platform,
+                    values=["LinkedIn", "eJobs", "Hipo"], width=48, state="readonly").pack(anchor="center", pady=5)
+
+        tb.Label(self.search_service_form, text="Frequency").pack(anchor="center")
+        tb.Combobox(self.search_service_form, textvariable=self.search_freq,
+                    values=["30 Minutes", "1 Hour", "6 Hours"], width=48, state="readonly").pack(anchor="center", pady=5)
+
+        tb.Button(self.search_service_form, text="Add Search", bootstyle=tb.SUCCESS, command=lambda: (self.search_service.add_search(self.search_service_title.get(), self.search_service_link.get(), self.search_platform.get(), self.search_freq.get()),self.update_search_listbox(),self.hide_add_link_form())).pack(anchor="center", pady=10)
+
+        # Job Details Section
+        self.job_detail_frame = tb.Frame(self.right_frame, padding=10)
+        self.job_detail_frame.pack(fill=tk.BOTH, expand=True)
 
         self.title_label = tb.Label(self.job_detail_frame, text="", font=(FONT_FAMILY, 18, "bold"))
         self.title_label.pack(anchor="w", pady=(0, 5))
@@ -79,23 +108,29 @@ class JobUI:
         self.link_frame.pack(anchor="w", pady=(0, 10))
 
         self.link_button = tb.Button(self.link_frame, text="See Job", bootstyle="info", command=lambda: None)
+        self.favorite_button = tb.Button(self.link_frame, text="Save Job", bootstyle="danger", command=lambda: None)
 
-        self.favorite_button = tb.Button(self.link_frame, text=f"{'Save Job' if self.job_manager.selected_job is None else 'Remove Job'}", bootstyle="danger", command=lambda: None)
-
-        self.description_text = tk.Text(self.job_detail_frame, wrap=tk.WORD, font=(FONT_FAMILY, FONT_SIZE_BOLD), height=10, width=60)
+        self.description_text = tk.Text(self.job_detail_frame, wrap=tk.WORD, font=(FONT_FAMILY, FONT_SIZE_BOLD),
+                                        height=10, width=60)
         self.description_text.bind("<Key>", lambda e: "break")
-        self.hide_description()
-        """End Job Details + Controls"""
-        """End Horizontal Search Container"""
 
-    def update_job_list(self):
-        self.job_listbox.delete(0, tk.END)
-        for job in self.job_manager.jobs:
-            self.job_listbox.insert(tk.END, job.title)
+        self.hide_description()
+
+    def update_search_listbox(self):
+        self.search_listbox.delete(0, tk.END)
+        for search in self.search_service.searches:
+            self.search_listbox.insert(tk.END, str(search))  
+
+    def hide_add_link_form(self):
+        self.search_service_form.pack_forget()
+        self.add_link_button.config(text="+ Add Link", bootstyle=tb.PRIMARY, command=self.show_add_link_form)
+
+    def show_add_link_form(self):
+        self.search_service_form.pack(fill=tk.BOTH, expand=False, padx=10, pady=10)
+        self.add_link_button.config(text="x", bootstyle=tb.DANGER, command=self.hide_add_link_form)
 
     def on_search(self):
         url = self.url_var.get()
-        self.job_manager.clear()
         self.update_job_list()
 
         self.hide_description()
@@ -104,33 +139,42 @@ class JobUI:
         threading.Thread(target=self.scrape_thread, args=(url,)).start()
 
     def scrape_thread(self, url):
-        jobs = scrape_jobs(url)
-        job_objects = [Job(job.title, job.company, job.location, job.link, job.description) for job in jobs]
+        # jobs = scrape_jobs(url)
+        # job_objects = [Job(job.title, job.company, job.location, job.link, job.description) for job in jobs]
 
-        self.job_manager.add_jobs(job_objects)
-        self.update_job_list()
+        # self.search_service.add_search(job_objects)
+        # self.update_job_list()
+        pass
 
-    def on_select(self, event):
-        idx = self.job_listbox.curselection()
-        if not idx:
-            self.hide_description()
-            return
-        job = self.job_manager.jobs[idx[0]]
-        self.job_manager.select_job(idx[0])
+    def on_select_search(self, event):
+        selection = event.widget.curselection()
+        if selection:
+            index = selection[0]
+            selected_search = self.search_service.searches[index]
 
-        self.title_label.config(text=job.title)
-        self.company_label.config(text=job.company)
-        self.link_button.config(command=lambda: self.open_link(job.link))
-        if not self.link_button.winfo_ismapped():
-            self.link_button.pack(side=tb.LEFT, padx=5)
+        print(selected_search)
 
-        self.favorite_button.config(command=lambda: self.toggle_saved(self.job_manager.selected_job))
-        self.favorite_button.config(text=f"{'Save Job' if not self.job_manager.selected_job.saved else 'Remove Job'}")
-        self.favorite_button.pack(side=tb.LEFT, padx=5)
+    # def on_select(self, event):
+    #     idx = self.job_listbox.curselection()
+    #     if not idx:
+    #         self.hide_description()
+    #         return
+    #     job = self.search_service.searches[idx[0]]
+    #     self.search_service.select_job(idx[0])
+
+    #     self.title_label.config(text=job.title)
+    #     self.company_label.config(text=job.company)
+    #     self.link_button.config(command=lambda: self.open_link(job.link))
+    #     if not self.link_button.winfo_ismapped():
+    #         self.link_button.pack(side=tb.LEFT, padx=5)
+
+    #     self.favorite_button.config(command=lambda: self.toggle_saved(self.job_manager.selected_job))
+    #     self.favorite_button.config(text=f"{'Save Job' if not self.job_manager.selected_job.saved else 'Remove Job'}")
+    #     self.favorite_button.pack(side=tb.LEFT, padx=5)
         
-        self.description_text.pack(anchor="w", fill=tk.BOTH, expand=True)
-        self.description_text.delete(1.0, tk.END)
-        self.description_text.insert(tk.END, job.description)
+    #     self.description_text.pack(anchor="w", fill=tk.BOTH, expand=True)
+    #     self.description_text.delete(1.0, tk.END)
+    #     self.description_text.insert(tk.END, job.description)
 
     def toggle_saved(self, current_job):
         current_job.saved = not current_job.saved
@@ -159,5 +203,5 @@ class JobUI:
 
 class JobApp:
     def __init__(self, root):
-        self.job_manager = JobManager()
-        self.ui = JobUI(root, self.job_manager)
+        self.search_service = SearchService()
+        self.ui = JobUI(root, self.search_service)

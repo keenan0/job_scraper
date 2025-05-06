@@ -7,14 +7,5 @@ class Job:
         self.description = description
         self.saved = False
 
-    def to_dict(self):
-        return {
-            "Title": self.title,
-            "Company": self.company,
-            "Location": self.location,
-            "Link": self.link,
-            "Saved": self.saved
-        }
-
     def __str__(self):
         return f"{self.saved} {self.title} {self.company} {self.location} {self.link}"
