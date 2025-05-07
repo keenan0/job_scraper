@@ -1,18 +1,21 @@
-import ttkbootstrap as tb
 import tkinter as tk
-from tkinter import StringVar
-import threading
-import webbrowser
 import tkinter.messagebox as msgbox
+import ttkbootstrap as tb
+import webbrowser
 import pyperclip
+import threading
+
+from tkinter import StringVar
 from src.GUI.config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
 from src.Models.Search import Search
 from src.Services.SearchServices import SearchService
+from src.Models.job_model import Job
 
 class JobUI:
     def __init__(self, root, search_service):
         self.root = root
         self.search_service = search_service
+        self.static_selected_search = None
         self.root.title("MDS - Job Scraper")
         
         #self.style = tb.Style('darkly') # flatly
@@ -194,12 +197,16 @@ class JobUI:
 
 
 
-    def create_job_card(self, parent, title, company, link):
+    def create_job_card(self, parent, ref_job):
         """
-            Generated with Claude 3.7
+            Partly generated with Claude 3.7
 
             Given the input, it generates a card (frame) for the custom listbox (canvas).
         """
+
+        title = ref_job.title
+        company = ref_job.company
+        link = ref_job.link
 
         card = tk.Frame(parent, padx=10, pady=10, relief="raised", borderwidth=1, bg="white")
         card.pack(fill=tk.X, expand=True, padx=5, pady=5)
@@ -208,19 +215,63 @@ class JobUI:
         tk.Label(card, text=company, font=(FONT_FAMILY, FONT_SIZE - 6), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
         
         button_frame = tk.Frame(card, bg="white")
-        tk.Button(button_frame, text="Save", padx=10).pack(side="left", padx=(0, 5))
-        tk.Button(button_frame, text="Open Link", command=lambda: self.open_link(link), padx=10).pack(side="left")
+
+        save_btn = tb.Button(button_frame, text="Save")
+        save_btn.config(command=lambda: self.save_job(ref_job, save_btn))
+        if ref_job.saved:
+            save_btn.config(text="Remove Saved", bootstyle=tb.DANGER)
+        else:
+            save_btn.config(text="Save", bootstyle=tb.PRIMARY)
+        save_btn.pack(side="left", padx=(0, 5))
+
+        apply_btn = tb.Button(button_frame, text="Apply")
+        apply_btn.config(command=lambda: self.apply_to_job(ref_job, apply_btn))
+        if ref_job.applied:
+            apply_btn.config(text="Cancel Apply", bootstyle=tb.DANGER)
+        else:
+            apply_btn.config(text="Apply", bootstyle=tb.PRIMARY)
+        apply_btn.pack(side="left", padx=(0, 5))
+        
+        tb.Button(button_frame, text="Open Link", command=lambda: self.open_link(link)).pack(side="left", padx=(0, 5))
+        
         button_frame.pack(anchor='w', pady=(5, 0))
         
         return card
+
+    def save_job(self, job, btn):
+        print(f"Saved job {job}")
+        job.saved = not job.saved
+
+        if job.saved:
+            btn.config(text="Remove Saved", bootstyle=tb.DANGER)
+        else:
+            btn.config(text="Save", bootstyle=tb.PRIMARY)
+        
+
+    def apply_to_job(self, job, btn):
+        print(f"Applied to {job}")
+        job.applied = not job.applied
+
+        if job.applied:
+            btn.config(text="Cancel Apply", bootstyle=tb.DANGER)
+        else:
+            btn.config(text="Apply", bootstyle=tb.PRIMARY)
+        
 
     def update_search_listbox(self):
         self.search_listbox.delete(0, tk.END)
         for search in self.search_service.searches:
             self.search_listbox.insert(tk.END, str(search))  
 
-    def scrape_thread(self, url):
-        pass
+    def update_job_listbox(self, selected_search):
+        # Clear the cards in the UI
+        for widget in self.job_listbox_scrollable_frame.winfo_children():
+            widget.destroy()
+
+        # Add the cards from the actual selected search
+        for job in selected_search.get_jobs().values():
+            card = self.create_job_card(self.job_listbox_scrollable_frame, job)
+            card.pack(fill="x", pady=5, padx=10)
 
     def on_select_search(self, event):
         """
@@ -235,16 +286,9 @@ class JobUI:
         selection = event.widget.curselection()
         if selection:
             index = selection[0]
-            selected_search = self.search_service.searches[index]
+            self.static_selected_search = self.search_service.searches[index]
 
-        # Clear the cards in the UI
-        for widget in self.job_listbox_scrollable_frame.winfo_children():
-            widget.destroy()
-
-        # Add the cards from the actual selected search
-        for job in selected_search.get_jobs().values():
-            card = self.create_job_card(self.job_listbox_scrollable_frame, job.title, job.company, job.link)
-            card.pack(fill="x", pady=5, padx=10)
+        self.update_job_listbox(self.static_selected_search)
 
     def open_link(self, url):
         """

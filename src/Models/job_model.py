@@ -6,6 +6,7 @@ class Job:
         self.link = link
         self.description = description
         self.saved = False
+        self.applied = False
 
     def __str__(self):
         return f"{self.saved} {self.title} {self.company}  {self.link}"
