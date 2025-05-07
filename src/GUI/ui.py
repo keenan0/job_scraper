@@ -1,23 +1,13 @@
 import ttkbootstrap as tb
 import tkinter as tk
 from tkinter import StringVar
-from job_model import Job
-from scraper import scrape_jobs
 import threading
 import webbrowser
 import tkinter.messagebox as msgbox
 import pyperclip
-from config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
-from Models.Search import Search
-
-class SearchService:
-    def __init__(self):
-        self.searches = [] 
-
-    def add_search(self, title, link, platform, frequency):
-        self.searches.extend([Search(title, link, platform, frequency)])
-
-
+from src.GUI.config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
+from src.Models.Search import Search
+from src.Services.SearchServices import SearchService
 
 class JobUI:
     def __init__(self, root, search_service):
@@ -112,33 +102,42 @@ class JobUI:
 
     
 
-    # Other Utility Functions
+    # Custom Canvas Scrolling Functions - tkinter's listbox does not support custom cards inside so you have to build your own listbox and handle scrolling manually
     def _configure_scroll_region(self):
-        """Actualizează regiunea de scroll a canvas-ului pentru a include tot conținutul frame-ului"""
+        """Sets the scrollable region of the canvas"""
+        
         self.job_listbox_canvas.configure(scrollregion=self.job_listbox_canvas.bbox("all"))
 
     def _configure_canvas(self, event):
-        """Ajustează lățimea ferestrei create în canvas pentru a se potrivi cu lățimea canvas-ului"""
-        # Setează lățimea frame-ului scrollabil la lățimea canvas-ului
+        """Adjusts the canvas width"""
+        
         canvas_width = event.width
         self.job_listbox_canvas.itemconfig(self.frame_window_id, width=canvas_width)
     
 
     def _bind_to_mousewheel(self, event):
-        print("ENTERED")
-        """Bind mousewheel events to canvas when mouse enters the canvas area"""
-        # Pentru Windows
+        """
+            Generated with Claude 3.7
+
+            Bind mousewheel events to canvas when mouse enters the canvas area
+        """
+        
+        # Windows
         self.job_listbox_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-        # Pentru Linux
+        # Linux
         self.job_listbox_canvas.bind_all("<Button-4>", self._on_mousewheel)
         self.job_listbox_canvas.bind_all("<Button-5>", self._on_mousewheel)
     
     def _unbind_from_mousewheel(self, event):
-        print("EXITED")
-        """Unbind mousewheel events when mouse leaves the canvas area"""
-        # Pentru Windows
+        """
+            Generated with Claude 3.7
+
+            Unbind mousewheel events when mouse leaves the canvas area 
+        """
+        
+        # Windows
         self.job_listbox_canvas.unbind_all("<MouseWheel>")
-        # Pentru Linux
+        # Linux
         self.job_listbox_canvas.unbind_all("<Button-4>")
         self.job_listbox_canvas.unbind_all("<Button-5>")
     
@@ -153,7 +152,9 @@ class JobUI:
 
 
 
-    # SHOW/HIDE
+    # Show/Hide logic
+
+    # Toggling the Add Link top left button 
     def hide_add_link_form(self):
         self.search_service_form.pack_forget()
         self.add_link_button.config(text="+ Add Link", bootstyle=tb.PRIMARY, command=self.callback_add_search_form)
@@ -164,53 +165,54 @@ class JobUI:
         self.add_link_button.config(text="x", bootstyle=tb.DANGER, command=self.hide_add_link_form)
 
 
-
+    # Toggling the listbox when clicking on another menu
     def hide_job_listbox(self): 
         self.job_listbox_canvas.pack_forget()
         self.job_listbox_scrollbar.pack_forget()
         self.right_frame.update()
-
 
     def show_job_listbox(self):
         self.job_listbox_canvas.pack(side="left", fill="both", expand=True)
         self.job_listbox_scrollbar.pack(side="right", fill="y")
 
 
-    # UTILITY
-
+    # Callbacks used by buttons etc.
     def callback_add_search_form(self):
         self.show_add_link_form()
         self.hide_job_listbox()
 
     def callback_add_new_search(self):
-        self.search_service.add_search(self.search_service_link.get(), self.search_freq.get(), self.search_platform.get(), self.search_service_title.get())
-        self.update_search_listbox()
+        def update_search_service():
+            for search in self.search_service.searches:
+                search.job_search()
 
+        self.search_service.add_search(self.search_service_title.get(), self.search_service_link.get(), self.search_platform.get(), self.search_freq.get())
+        
+        update_search_service()
+        self.update_search_listbox()
         self.hide_add_link_form()
 
-    def create_job_card(self, parent, title, company, location, link):
-        # Creăm un frame pentru card care va ocupa toată lățimea disponibilă
+
+
+    def create_job_card(self, parent, title, company, link):
+        """
+            Generated with Claude 3.7
+
+            Given the input, it generates a card (frame) for the custom listbox (canvas).
+        """
+
         card = tk.Frame(parent, padx=10, pady=10, relief="raised", borderwidth=1, bg="white")
-        
-        # Folosim pack cu fill=tk.X pentru a ocupa toată lățimea disponibilă
         card.pack(fill=tk.X, expand=True, padx=5, pady=5)
         
-        # Adăugăm elementele cardului
-        tk.Label(card, text=title, font=('Arial', 14, 'bold'), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
-        tk.Label(card, text=company, font=('Arial', 12), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
-        tk.Label(card, text=location, font=('Arial', 12, 'italic'), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
+        tk.Label(card, text=title, font=(FONT_FAMILY, FONT_SIZE_BOLD, 'bold'), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
+        tk.Label(card, text=company, font=(FONT_FAMILY, FONT_SIZE - 6), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
         
-        # Butoanele
         button_frame = tk.Frame(card, bg="white")
-        tk.Button(button_frame, text="Salvează", padx=10).pack(side="left", padx=(0, 5))
-        tk.Button(button_frame, text="Deschide job", command=lambda: self.open_link(link), padx=10).pack(side="left")
+        tk.Button(button_frame, text="Save", padx=10).pack(side="left", padx=(0, 5))
+        tk.Button(button_frame, text="Open Link", command=lambda: self.open_link(link), padx=10).pack(side="left")
         button_frame.pack(anchor='w', pady=(5, 0))
         
         return card
-
-    def show_search_jobs(self):
-        self.search_service_form.pack_forget()
-        self.job_detail_frame.pack(fill=tb.BOTH)
 
     def update_search_listbox(self):
         self.search_listbox.delete(0, tk.END)
@@ -221,6 +223,12 @@ class JobUI:
         pass
 
     def on_select_search(self, event):
+        """
+            Partly generated with ChatGPT
+
+            Called when selecting a component in the Search Listbox. It then renders the job list corresponding to the selected Search in the custom listbox (canvas).
+        """
+
         self.hide_add_link_form()
         self.show_job_listbox()
 
@@ -229,13 +237,22 @@ class JobUI:
             index = selection[0]
             selected_search = self.search_service.searches[index]
 
-        for job in selected_search.get_jobs():
-            card = self.create_job_card(self.job_listbox_scrollable_frame, job.title, job.company, job.location, job.link)
+        # Clear the cards in the UI
+        for widget in self.job_listbox_scrollable_frame.winfo_children():
+            widget.destroy()
+
+        # Add the cards from the actual selected search
+        for job in selected_search.get_jobs().values():
+            card = self.create_job_card(self.job_listbox_scrollable_frame, job.title, job.company, job.link)
             card.pack(fill="x", pady=5, padx=10)
 
-        print(selected_search.get_jobs())
-
     def open_link(self, url):
+        """
+            Generated with ChatGPT
+
+            Open link function. It will open the link in the default browser. If no browser is set, it will copy the link to the clipboard using pyperclip.
+        """
+
         try:
             webbrowser.get("windows-default").open_new_tab(url)
         except:

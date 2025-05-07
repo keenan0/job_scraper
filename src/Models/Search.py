@@ -1,23 +1,23 @@
-from job_model import *
-from template_jobs import template_jobs
+from src.Models.job_model import *
+from Testing.template_jobs import template_jobs
+from bs4 import BeautifulSoup
+import requests
+import time
 
 class Search:
     def __init__(self, link, frequency, platform, name):
         self.link = link
         self.frequency = frequency
         self.platform = platform
-        self.jobs = []
+        self.jobs = {}
         self.name = name
         self.active = True
         with open('Data/searches.json', 'a') as f:
             f.write(f"{self.name} {self.link} {self.frequency} {self.platform} {self.active}\n")
 
-        # ASTA E DOAR PENTRU DEBUG
-        self.jobs = template_jobs
-
     def __str__(self):
-        return f"{self.name} {self.link}"
-    
+        return f"{self.name}"
+
     def __repr__(self):
         return f"{self.name} {self.link}"
 
@@ -30,3 +30,6 @@ class Search:
     
     def get_jobs(self):
         return self.jobs
+
+    def job_search(self):
+        pass

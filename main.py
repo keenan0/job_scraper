@@ -1,5 +1,5 @@
 import ttkbootstrap as tb
-from ui import JobApp
+from src.GUI.ui import JobApp
 
 if __name__ == '__main__':
     root = tb.Window()
