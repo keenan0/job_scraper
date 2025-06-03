@@ -16,17 +16,24 @@ class EjobsSearch(Search):
             valid_jobs_found = False
 
             for job in jobs:
+                link_tag = job.find('h2', class_='job-card-content-middle__title').find('a')
+                link = "ejobs.ro" + link_tag['href']
+                if link in self.links:
+                    continue
                 title = job.find('h2', class_='job-card-content-middle__title').find('span', recursive=True)
                 company = job.find('h3', class_='job-card-content-middle__info').find('a')
                 date = job.find('div', class_='job-card-content-top__date')
-                link_tag = job.find('h2', class_='job-card-content-middle__title').find('a')
+                fetch_date = datetime.datetime.now()
 
                 if not title or not company or not date or not link_tag or 'href' not in link_tag.attrs:
                     continue
 
                 valid_jobs_found = True
                 link = "ejobs.ro" + link_tag['href']
-                new_job = Job(title.text.strip(), company.text.strip(), date.text.strip(), link)
+                new_job = Job(title.text.strip(), company.text.strip(), date.text.strip(), link, fetch_date)
+
+                self.links.add(link)
+                self.jobs.add(new_job)
 
             if not valid_jobs_found:
                 print("Nu mai sunt joburi.")

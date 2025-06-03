@@ -1,3 +1,5 @@
+import datetime
+
 from src.Models.Search import *
 
 class LinkedInSearch(Search):
@@ -13,18 +15,23 @@ class LinkedInSearch(Search):
         valid_jobs_found = False
 
         for job in jobs:
+            link_tag = job.find('a', class_='base-card__full-link', recursive=True)
+            link = link_tag['href']
+            if link in self.links:
+                continue
             title = job.find('h3', class_='base-search-card__title', recursive=True)
             company = job.find('a', class_='hidden-nested-link', recursive=True)
             date = job.find('time', class_='job-search-card__listdate--new', recursive=True)
-            link_tag = job.find('a', class_='base-card__full-link', recursive=True)
+
+            fetch_date = datetime.datetime.now()
             if not title or not company or not date or not link_tag or 'href' not in link_tag.attrs:
                 continue
 
             valid_jobs_found = True
             link = link_tag['href']
-            new_job = Job(title.text.strip(), company.text.strip(), date.text.strip(), link)
-            if link not in self.jobs.keys():
-                self.jobs[link] = new_job
+            new_job = Job(title.text.strip(), company.text.strip(), date.text.strip(), link, fetch_date)
+            self.links.append(link)
+            self.jobs.add(new_job)
 
         if not valid_jobs_found:
             print("Nu mai sunt joburi.")
