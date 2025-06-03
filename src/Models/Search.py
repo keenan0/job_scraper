@@ -16,6 +16,7 @@ class Search:
         self.name = name
         self.active = True
 
+
     def __str__(self):
         return f"{self.name}"
 
@@ -34,3 +35,13 @@ class Search:
 
     def job_search(self):
         pass
+
+    # def period_searching(self):
+    #     last_fetch = datetime.datetime.now()
+    #     self.job_search()
+    #     while self.active:
+    #         current_time = datetime.datetime.now()
+    #         if (current_time - last_fetch).total_seconds() >= self.frequency:
+    #             self.job_search()
+    #             last_fetch = current_time
+    #         time.sleep(60)

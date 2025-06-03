@@ -3,6 +3,7 @@ from src.Models.Search import Search
 from src.Models.ejobs_search import EjobsSearch
 from src.Models.hipo_search import HipoSearch
 from src.Models.linkedin_search import LinkedInSearch
+import threading
 
 class SearchService:
     def __init__(self):
@@ -24,6 +25,10 @@ class SearchService:
     def add_search(self, title, link, platform, frequency):
         new_search = self.search_factory(title, link, platform, frequency)
         self.searches.append(new_search)
+        #thread(new_search.periodc_searching)
+        # if new_search.active:
+        #     threading.Thread(target=new_search.period_searching).start()
+
 
     def load_searches(self):
         self.searches.append(json[1])
