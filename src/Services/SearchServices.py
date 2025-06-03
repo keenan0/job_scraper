@@ -8,7 +8,6 @@ import threading
 class SearchService:
     def __init__(self):
         self.searches = []
-        self.load_searches()
 
     def search_factory(self, title, link, platform, frequency):
         platform = platform.lower()

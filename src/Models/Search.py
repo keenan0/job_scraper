@@ -7,7 +7,7 @@ from sortedcontainers import SortedSet
 import datetime
 
 class Search:
-    def __init__(self, link, frequency, platform, name, fetch_date):
+    def __init__(self, link, frequency, platform, name):
         self.link = link
         self.frequency = frequency
         self.platform = platform
