@@ -1,5 +1,6 @@
 from src.Models.Search import *
 
+
 class HipoSearch(Search):    
     def job_search(self):
         """
@@ -20,9 +21,14 @@ class HipoSearch(Search):
 
             for job in jobs:
                 title = job.find('a', class_='job-title')
+                link_tag = title
+                link = 'https://www.hipo.ro' + link_tag['href']
+                if link in self.links:
+                    continue
                 company = job.find('p', class_='company-name')
                 date = job.find('div', class_='d-flex mb-1')
-                link_tag = title
+
+                fetch_date = datetime.datetime.now()
 
                 if not title or not company or not date or not link_tag or 'href' not in link_tag.attrs:
                     continue
@@ -31,20 +37,11 @@ class HipoSearch(Search):
                 link = 'https://www.hipo.ro' + link_tag['href']
 
                 job_new = Job(title.text.strip(), company.text.strip(), date.text.strip(), link)
-                if link not in self.jobs.keys():
-                    self.jobs[link] = job_new
+                self.links.append(link)
+                self.jobs.add(job_new)
 
             if not valid_jobs_found:
                 break
 
             page += 1
             time.sleep(3)
-
-if __name__ == "__main__":
-    search = HipoSearch(
-        "https://www.hipo.ro/locuri-de-munca/cautajob/IT-Software/Toate-Orasele",
-        60,
-        "Hipo",
-        "HipoSearch"
-    )
-    search.job_search()
