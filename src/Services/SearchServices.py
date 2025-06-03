@@ -23,3 +23,5 @@ class SearchService:
     def add_search(self, title, link, platform, frequency):
         new_search = self.search_factory(title, link, platform, frequency)
         self.searches.append(new_search)
+        
+        return new_search
