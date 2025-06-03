@@ -92,7 +92,15 @@ class SearchView(BaseView):
         title = self.search_service_title.get()
         link = self.search_service_link.get()
         platform = self.search_platform.get()
-        freq = self.search_freq.get()
+        
+        freq_dict = {
+            "30 Minutes": 30,
+            "1 Hour": 60,
+            "6 Hours": 60 * 6
+        }
+
+        selected_freq_str = self.search_freq.get()
+        freq = freq_dict.get(selected_freq_str)
 
         if not title or not link:
             msgbox.showerror("Error", "Title and Link are required.")
