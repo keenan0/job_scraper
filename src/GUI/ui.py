@@ -19,7 +19,7 @@ class JobUI:
         self.root.title("MDS - Job Scraper")
         
         #self.style = tb.Style('darkly') # flatly
-        self.style = tb.Style()
+        self.style = tb.Style('darkly')
         self.style.configure('.', font=(FONT_FAMILY, FONT_SIZE))
         self.style.configure('TButton', font=(FONT_FAMILY, FONT_SIZE_BOLD, 'bold'))
         self.style.configure('TLabel', font=(FONT_FAMILY, FONT_SIZE_BOLD))
@@ -29,6 +29,9 @@ class JobUI:
         self.frame.pack(fill=tk.X)
         self.add_link_button = tb.Button(self.frame, text="+ Add Link", width=12, command=self.callback_add_search_form)
         self.add_link_button.pack(side=tk.LEFT)
+
+        self.view_saved_jobs = tb.Button(self.frame, text="View Saved", width=12, command=self.callback_view_saved_jobs, bootstyle=tb.WARNING)
+        #self.view_saved_jobs.pack(side=tk.LEFT)
 
         # ==== Horizontal Container ====
         self.container = tb.PanedWindow(self.root, orient=tk.HORIZONTAL)
@@ -79,19 +82,15 @@ class JobUI:
         self.job_listbox_canvas = tk.Canvas(self.right_frame, bg="lightblue")
         self.job_listbox_scrollbar = tk.Scrollbar(self.right_frame, orient="vertical", command=self.job_listbox_canvas.yview)
 
-        # Configurăm canvas-ul să ocupe tot spațiul disponibil
         self.job_listbox_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.job_listbox_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # Frame-ul scrollabil trebuie să aibă lățimea configurabilă pentru a se extinde
         self.job_listbox_scrollable_frame = tk.Frame(self.job_listbox_canvas, bg="lightblue")
         self.job_listbox_scrollable_frame.bind("<Configure>", lambda e: self._configure_scroll_region())
 
-        # Adăugăm event-urile pentru mouse wheel scroll
         self.job_listbox_canvas.bind("<Enter>", self._bind_to_mousewheel)
         self.job_listbox_canvas.bind("<Leave>", self._unbind_from_mousewheel)
 
-        # Creăm fereastra în canvas și obținem ID-ul pentru a-l putea actualiza mai târziu
         self.frame_window_id = self.job_listbox_canvas.create_window(
             (0, 0), 
             window=self.job_listbox_scrollable_frame, 
@@ -100,10 +99,11 @@ class JobUI:
 
         self.job_listbox_canvas.configure(yscrollcommand=self.job_listbox_scrollbar.set)
 
-        # Adăugăm un event pentru când canvas-ul își schimbă dimensiunea
         self.job_listbox_canvas.bind("<Configure>", self._configure_canvas)
 
-    
+
+    def callback_view_saved_jobs(self):
+        print("test")
 
     # Custom Canvas Scrolling Functions - tkinter's listbox does not support custom cards inside so you have to build your own listbox and handle scrolling manually
     def _configure_scroll_region(self):
