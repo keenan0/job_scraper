@@ -31,7 +31,7 @@ class EjobsSearch(Search):
                 company = job.find('h3', class_='job-card-content-middle__info').find('a').text.strip()
 
                 str_date = job.find('div', class_='job-card-content-top__date').text.strip()
-                date = dateparser.parse(str_date, languages=['ro'])
+                date = dateparser.parse(str_date, languages=['ro']).date()
 
                 fetch_date = datetime.datetime.now()
 
