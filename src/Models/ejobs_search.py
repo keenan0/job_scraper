@@ -1,8 +1,11 @@
 from src.Models.Search import *
+from selenium import webdriver
+from selenium.webdriver.Chrome.options import Options
 import dateparser
 
 class EjobsSearch(Search):
     def job_search(self):
+
 
         base_url = self.link
         page = 1
@@ -11,8 +14,19 @@ class EjobsSearch(Search):
 
             url = f"{base_url}/pagina{page}"
             print(f"\nPagina {page}")
-            response = requests.get(url)
-            soup = BeautifulSoup(response.text, 'lxml')
+
+            options = Options()
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            options.add_argument("--disable-gpu")
+            options.add_argument("--window-size=1920,1080")
+            driver = webdriver.Chrome(options=options)
+            driver.get(url)
+            time.sleep(0.5)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+            soup = BeautifulSoup(driver.page_source, 'lxml')
             jobs = soup.find_all('div', class_='job-card-content')
 
             valid_jobs_found = False
