@@ -14,4 +14,4 @@ class Job:
         return f"{self.saved} {self.title} {self.company}  {self.link}"
 
     def __lt__(self, other):
-        return self.fetch_date > other.fetch_date
+        return self.data > other.data

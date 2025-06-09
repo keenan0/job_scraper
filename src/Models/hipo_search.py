@@ -1,12 +1,13 @@
 from src.Models.Search import *
 
-
 class HipoSearch(Search):    
     def job_search(self):
+
         base_url = self.link
         page = 1
 
         while True:
+
             url = f"{base_url}/{page}"
             print(f"\nPagina {page}")
             response = requests.get(url)
@@ -17,6 +18,7 @@ class HipoSearch(Search):
 
             for job in jobs:
                 valid_jobs_found = True
+
                 title = job.find('a', class_='job-title').find('h5').text.strip()
 
                 link_href = job.find('a', class_='job-title')['href']
@@ -40,13 +42,13 @@ class HipoSearch(Search):
                 fetch_date = datetime.datetime.now()
 
 
-                job_new = Job(title, company, date, link, fetch_date)
+                new_job = Job(title, company, date, link, fetch_date)
 
                 self.links.add(link)
-                self.jobs.add(job_new)
+                self.jobs.add(new_job)
 
             if not valid_jobs_found:
                 break
 
             page += 1
-            time.sleep(0.33)
+            time.sleep(0.1)
