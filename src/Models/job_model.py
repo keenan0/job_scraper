@@ -14,3 +14,15 @@ class Job:
 
     def __lt__(self, other):
         return self.data > other.data
+
+    def to_dict(self):
+        return {
+            "title": self.title,
+            "company": self.company,
+            "data": self.data.isoformat() if self.data else None,
+            "link": self.link,
+            "description": self.description,
+            "saved": self.saved,
+            "applied": self.applied,
+            "fetch_date": self.fetch_date.isoformat() if self.fetch_date else None
+        }
