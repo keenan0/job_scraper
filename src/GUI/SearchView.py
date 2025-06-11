@@ -116,6 +116,7 @@ class SearchView(BaseView):
             msgbox.showerror("Error", "Title and Link are required.")
             return
         try:
+            print(title, link, freq)
             new_search = self.search_service.add_search(title, link, freq)
         except Exception as e:
             msgbox.showerror("Error", f"Failed to add search: {e}")
