@@ -1,6 +1,6 @@
 from src.Models.Search import *
 from selenium import webdriver
-from selenium.webdriver.Chrome.options import Options
+from selenium.webdriver.chrome.options import Options
 import dateparser
 
 class EjobsSearch(Search):
