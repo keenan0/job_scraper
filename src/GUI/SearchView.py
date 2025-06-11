@@ -41,9 +41,9 @@ class SearchView(BaseView):
         tb.Entry(self.search_service_form, textvariable=self.search_service_title, width=50).pack(anchor="center", pady=5)
         tb.Label(self.search_service_form, text="Job Link").pack(anchor="center")
         tb.Entry(self.search_service_form, textvariable=self.search_service_link, width=50).pack(anchor="center", pady=5)
-        tb.Label(self.search_service_form, text="Platform").pack(anchor="center")
-        tb.Combobox(self.search_service_form, textvariable=self.search_platform,
-                    values=["LinkedIn", "eJobs", "Hipo"], width=48, state="readonly").pack(anchor="center", pady=5)
+        # tb.Label(self.search_service_form, text="Platform").pack(anchor="center")
+        # tb.Combobox(self.search_service_form, textvariable=self.search_platform,
+        #             values=["LinkedIn", "eJobs", "Hipo"], width=48, state="readonly").pack(anchor="center", pady=5)
         tb.Label(self.search_service_form, text="Frequency").pack(anchor="center")
         tb.Combobox(self.search_service_form, textvariable=self.search_freq,
                     values=["30 Minutes", "1 Hour", "6 Hours"], width=48, state="readonly").pack(anchor="center", pady=5)
@@ -67,7 +67,7 @@ class SearchView(BaseView):
         self.jobs_container.pack(fill="both", expand=True)
 
         # Paginația plasată în scrollable_frame, sub containerul joburilor
-        self.pagination_frame = tb.Frame(self.job_listbox_scrollable_frame, padding=10, bootstyle="light")
+        self.pagination_frame = tb.Frame(self.job_listbox_scrollable_frame, padding=10, bootstyle="transparent")
 
         self.prev_button = tb.Button(self.pagination_frame, text="Previous", command=self.prev_page)
         self.page_label = tb.Label(self.pagination_frame, text="Page 1")
@@ -105,7 +105,7 @@ class SearchView(BaseView):
     def callback_add_new_search(self):
         title = self.search_service_title.get()
         link = self.search_service_link.get()
-        platform = self.search_platform.get()
+        #platform = self.search_platform.get()
 
         freq_dict = {"30 Minutes": 30, "1 Hour": 60, "6 Hours": 360}
         
@@ -115,8 +115,11 @@ class SearchView(BaseView):
         if not title or not link:
             msgbox.showerror("Error", "Title and Link are required.")
             return
+        try:
+            new_search = self.search_service.add_search(title, link, freq)
+        except Exception as e:
+            msgbox.showerror("Error", f"Failed to add search: {e}")
 
-        new_search = self.search_service.add_search(title, link, platform, freq)
         if new_search:
             self.update_search_listbox_display()
             self.search_service_title.set("")

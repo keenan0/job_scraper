@@ -23,7 +23,7 @@ class JobUI:
         self.favorites_service = favorites_service
         self.root.title("MDS - Job Scraper")
         
-        self.style = tb.Style() # Sau 'darkly' etc.
+        self.style = tb.Style('darkly') # Sau 'darkly' etc.
         self.style_config = {
             'FONT_FAMILY': FONT_FAMILY, 
             'FONT_SIZE': FONT_SIZE,
