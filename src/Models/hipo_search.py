@@ -31,12 +31,12 @@ class HipoSearch(Search):
 
                 info = job.find_all('div', class_='d-flex mb-1')
                 if len(info) == 2:
-                    str_date = info[0].find('small')
+                    str_date = info[0]
                 else:
-                    str_date = info[1].find('small')
-
+                    str_date = info[1]
 
                 str_date = str_date.text.strip()
+
                 date = datetime.datetime.strptime(str_date, '%d-%m-%Y')
 
                 fetch_date = datetime.datetime.now()

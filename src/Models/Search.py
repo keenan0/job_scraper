@@ -16,7 +16,6 @@ class Search:
         self.name = name
         self.active = True
 
-
     def __str__(self):
         return f"{self.name}"
 

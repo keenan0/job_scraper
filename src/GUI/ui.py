@@ -38,7 +38,7 @@ class JobUI:
         self._setup_main_layout()
         self._setup_views()
         
-        self.show_search_view() # Afiseaza view-ul de search initial
+        self.show_search_view()
 
     def _setup_main_layout(self):
         # ==== Top Navigation Frame ====
@@ -69,7 +69,7 @@ class JobUI:
 
     def _setup_views(self):
         self.search_view_instance = SearchView(self.left_pane_content_frame, self.right_pane_content_frame, 
-                                               self.style_config, self.search_service, self.favorites_service)
+                                               self.style_config, self.search_service, self.favorites_service, self.add_link_button)
         self.favorites_view_instance = FavoritesView(self.left_pane_content_frame, self.right_pane_content_frame,
                                                      self.style_config, self.favorites_service)
 
@@ -85,9 +85,9 @@ class JobUI:
             self.add_link_button.pack(side=tk.LEFT, padx=(0,5)) 
             
             if not self.search_view_instance.search_service_form.winfo_ismapped():
-                 self.add_link_button.config(text="+ Add Link", bootstyle=tb.PRIMARY)
+                self.add_link_button.config(text="+ Add Link", bootstyle=tb.PRIMARY)
             else:
-                 self.add_link_button.config(text="x Close Form", bootstyle=tb.DANGER)
+                self.add_link_button.config(text="x Close Form", bootstyle=tb.DANGER)
 
         else:
             self.add_link_button.pack_forget() 
