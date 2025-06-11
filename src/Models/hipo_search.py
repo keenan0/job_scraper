@@ -18,7 +18,7 @@ class HipoSearch(Search):
 
             if total_pages is None:
                 str_nr_pages = soup.find('div', class_='job-item').text.strip()
-                total_pages = int(str_nr_pages.split(' ')[0]) / 40
+                total_pages = int(str_nr_pages.split(' ')[0]) / 40 + 1
 
             jobs = soup.find_all('div', class_='text-start')
             valid_jobs_found = False
