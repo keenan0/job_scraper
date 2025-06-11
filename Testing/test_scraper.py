@@ -3,7 +3,7 @@ import time
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
-url = "https://www.ejobs.ro/locuri-de-munca/intern/sort-publish/pagina3"
+url = "https://www.ejobs.ro/locuri-de-munca/bucuresti/inginer/sort-publish"
 
 options = Options()
 options.add_argument("--headless")

@@ -4,16 +4,23 @@ class HipoSearch(Search):
     def job_search(self):
 
         base_url = self.link
-        page = 1
 
-        while True:
+        page = 1
+        total_pages = None
+
+        while total_pages is None or page <= total_pages:
+
 
             url = f"{base_url}/{page}"
             print(f"\nPagina {page}")
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
-            jobs = soup.find_all('div', class_='text-start')
 
+            if total_pages is None:
+                str_nr_pages = soup.find('div', class_='job-item').text.strip()
+                total_pages = int(str_nr_pages.split(' ')[0]) / 40
+
+            jobs = soup.find_all('div', class_='text-start')
             valid_jobs_found = False
 
             for job in jobs:

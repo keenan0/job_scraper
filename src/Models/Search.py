@@ -39,7 +39,7 @@ class Search:
     def period_searching(self):
         self.job_search()
         time.sleep(self.frequency * 60)
-        
+        print(len(self.jobs))
         while self.active:
             self.job_search()
             time.sleep(self.frequency * 60)

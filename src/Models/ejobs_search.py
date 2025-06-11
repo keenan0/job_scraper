@@ -6,11 +6,11 @@ import dateparser
 class EjobsSearch(Search):
     def job_search(self):
 
-
         base_url = self.link
         page = 1
+        total_pages = None
 
-        while True:
+        while total_pages is None or page <= total_pages:
 
             url = f"{base_url}/pagina{page}"
             print(f"\nPagina {page}")
@@ -23,10 +23,15 @@ class EjobsSearch(Search):
             options.add_argument("--window-size=1920,1080")
             driver = webdriver.Chrome(options=options)
             driver.get(url)
-            time.sleep(0.5)
+            time.sleep(0.2)
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
             soup = BeautifulSoup(driver.page_source, 'lxml')
+
+            if total_pages is None:
+                str_nr_pages = soup.find('h1', class_='ji-search-info').text.strip()
+                total_pages = int(str_nr_pages.split(' ')[0]) / 40
+
             jobs = soup.find_all('div', class_='job-card-content')
 
             valid_jobs_found = False
