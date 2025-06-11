@@ -16,6 +16,15 @@ class SearchService:
     def search_factory(self, title, link, platform, frequency):
         platform = platform.lower()
         
+        if "linkedin" in link.lower():
+            platform = "linkedin"
+        elif "ejobs" in link.lower():
+            platform = "ejobs"
+        elif "hipo" in link.lower():
+            platform = "hipo"
+        else:
+            raise Exception("Unsupported platform or link format")
+
         if platform == "linkedin":
             return LinkedInSearch(link, frequency, platform, title)
         elif platform == "ejobs":
@@ -26,7 +35,11 @@ class SearchService:
             return Search(link, frequency, platform, title)
 
     def add_search(self, title, link, platform, frequency):
-        new_search = self.search_factory(title, link, platform, frequency)
+        try:
+            new_search = self.search_factory(title, link, platform, frequency)
+        except Exception as e:
+            raise e
+
         self.searches.append(new_search)
         self.save_searches()
         

@@ -106,8 +106,11 @@ class SearchView(BaseView):
         if not title or not link:
             msgbox.showerror("Error", "Title and Link are required.")
             return
+        try:
+            new_search = self.search_service.add_search(title, link, platform, freq)
+        except Exception as e:
+            msgbox.showerror("Error", f"Failed to add search: {e}")
 
-        new_search = self.search_service.add_search(title, link, platform, freq)
         if new_search:
             self.update_search_listbox_display()
             # Gaseste butonul "+ Add Link" din JobUI si apeleaza hide pe el
