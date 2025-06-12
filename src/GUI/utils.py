@@ -13,7 +13,7 @@ def open_link_handler(url):
         msgbox.showinfo("Link copied", f"Couldn't open browser.\nLink copied to clipboard:\n{url}")
 
 
-def create_job_card_widget(parent, job, favorites_service, on_remove_callback=None):
+def create_job_card_widget(parent, job, favorites_service,blacklist_service=None, on_remove_callback=None):
     card = tk.Frame(parent, padx=10, pady=10, relief="raised", borderwidth=1, bg="white")
     
     tk.Label(card, text=job.title, font=(FONT_FAMILY, FONT_SIZE_BOLD, 'bold'), anchor='w', bg="white", justify=tk.LEFT).pack(fill=tk.X)
@@ -21,11 +21,19 @@ def create_job_card_widget(parent, job, favorites_service, on_remove_callback=No
     
     button_frame = tk.Frame(card, bg="white")
     
+    if blacklist_service:
+        tk.Button(
+            button_frame,
+            text="Blacklist",
+            padx=10,
+            command=lambda j=job: [blacklist_service.add_to_blacklist(j), parent.event_generate("<<BlacklistChanged>>")]
+        ).pack(side="left", padx=(0, 5))
+
     if on_remove_callback: 
         tk.Button(button_frame, text="Remove", padx=10, command=lambda j=job: on_remove_callback(j)).pack(side="left", padx=(0, 5))
     else: 
         tk.Button(button_frame, text="Save", padx=10, command=lambda j=job: favorites_service.add_favorite_job(j)).pack(side="left", padx=(0, 5))
-        
+
     tk.Button(button_frame, text="Open Link", command=lambda link=job.link: open_link_handler(link), padx=10).pack(side="left")
     button_frame.pack(anchor='w', pady=(5, 0))
     

@@ -12,15 +12,17 @@ from src.Models.Search import Search
 from src.Models.job_model import Job
 from src.Services.SearchServices import SearchService
 from src.Services.FavoritesServices import FavoritesService
+from src.Services.BlacklistServices import BlacklistService
 from src.GUI.FavoritesView import FavoritesView
 from src.GUI.SearchView import SearchView
 from src.Models.job_model import Job
 
 class JobUI:
-    def __init__(self, root, search_service, favorites_service):
+    def __init__(self, root, search_service, favorites_service,blacklist_service):
         self.root = root
         self.search_service = search_service
         self.favorites_service = favorites_service
+        self.blacklist_service = blacklist_service
         self.root.title("MDS - Job Scraper")
         
         self.style = tb.Style('darkly') # Sau 'darkly' etc.
@@ -69,7 +71,7 @@ class JobUI:
 
     def _setup_views(self):
         self.search_view_instance = SearchView(self.left_pane_content_frame, self.right_pane_content_frame, 
-                                               self.style_config, self.search_service, self.favorites_service, self.add_link_button)
+                                               self.style_config, self.search_service, self.favorites_service, self.blacklist_service, self.add_link_button)
         self.favorites_view_instance = FavoritesView(self.left_pane_content_frame, self.right_pane_content_frame,
                                                      self.style_config, self.favorites_service)
 
@@ -125,5 +127,6 @@ class JobApp:
     def __init__(self, root):
         self.search_service = SearchService()
         self.favorites_service = FavoritesService()
-        self.ui = JobUI(root, self.search_service,self.favorites_service)
+        self.blacklist_service = BlacklistService()
+        self.ui = JobUI(root, self.search_service,self.favorites_service,self.blacklist_service)
 

@@ -4,12 +4,13 @@ from tkinter import StringVar, messagebox as msgbox
 from src.GUI.BaseView import BaseView
 from src.GUI.utils import create_job_card_widget
 from src.Services.SearchServices import SearchService
-
+from src.Services.BlacklistServices import BlacklistService
 class SearchView(BaseView):
-    def __init__(self, parent_frame_left, parent_frame_right, style_config, search_service, favorites_service, add_link_button):
+    def __init__(self, parent_frame_left, parent_frame_right, style_config, search_service, favorites_service,blacklist_service, add_link_button):
         super().__init__(parent_frame_left, parent_frame_right, style_config)
         self.search_service: SearchService = search_service
         self.favorites_service = favorites_service
+        self.blacklist_service = blacklist_service
         self.current_selected_search = None
         self.add_link_button = add_link_button
 
@@ -17,6 +18,7 @@ class SearchView(BaseView):
         self.jobs_per_page = 25
 
         self._setup_ui()
+        self.jobs_container.bind("<<BlacklistChanged>>", lambda e: self.render_current_page())
 
     def _setup_ui(self):
         # ==== Left: Search Listbox ====
@@ -150,11 +152,11 @@ class SearchView(BaseView):
         self.render_current_page()
 
     def render_current_page(self):
-        # Șterge doar widgeturile din containerul joburilor
+        # Sterge doar widgeturile din containerul joburilor
         for widget in self.jobs_container.winfo_children():
             widget.destroy()
 
-        jobs = list(self.current_selected_search.get_jobs())
+        jobs = [job for job in self.current_selected_search.get_jobs() if not self.blacklist_service.is_blacklisted(job)]      
         total_jobs = len(jobs)
 
         if total_jobs == 0:
@@ -168,7 +170,7 @@ class SearchView(BaseView):
         jobs_to_display = jobs[start:end]
 
         for job_obj in jobs_to_display:
-            card = create_job_card_widget(self.jobs_container, job_obj, self.favorites_service)
+            card = create_job_card_widget(self.jobs_container, job_obj, self.favorites_service,self.blacklist_service)
             card.pack(fill="x", pady=5, padx=10)
 
         # Paginarea apare întotdeauna după lista de joburi (în scrollable_frame)
