@@ -1,3 +1,4 @@
+
 from src.Models.Search import *
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -5,6 +6,14 @@ import dateparser
 
 class EjobsSearch(Search):
     def job_search(self):
+
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1920,1080")
+        driver = webdriver.Chrome(options=options)
 
         base_url = self.link
         page = 1
@@ -15,16 +24,11 @@ class EjobsSearch(Search):
             url = f"{base_url}/pagina{page}"
             print(f"\nPagina {page}")
 
-            options = Options()
-            options.add_argument("--headless")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            options.add_argument("--disable-gpu")
-            options.add_argument("--window-size=1920,1080")
-            driver = webdriver.Chrome(options=options)
             driver.get(url)
             time.sleep(0.2)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+            for _ in range(13):
+                driver.execute_script("window.scrollBy(0, 1080);")
 
             soup = BeautifulSoup(driver.page_source, 'lxml')
 
@@ -65,3 +69,5 @@ class EjobsSearch(Search):
 
             page += 1
             time.sleep(0.1)
+
+        driver.quit()
