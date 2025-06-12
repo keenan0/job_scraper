@@ -42,7 +42,7 @@ class SearchService:
         self.save_searches()
         
         if new_search.active:
-            threading.Thread(target=new_search.period_searching).start()
+            new_search.thread.start()
 
         return new_search
 
@@ -68,7 +68,6 @@ class SearchService:
             with open(self.json_path, 'r') as f:
                 try:
                     data = json.load(f)
-                    return data
                 except json.decoder.JSONDecodeError:
                     print(f"File {self.json_path} is empty or contains invalid JSON")
                     return None
@@ -78,8 +77,6 @@ class SearchService:
         for item in data:
             s = self.search_factory(
                 item['name'],
-                item['link'],
-                item['platform'],
                 item['frequency']
             )
             s.active = item.get('active', False)
@@ -88,5 +85,5 @@ class SearchService:
                 s.get_jobs().add(job)
             s.links = set(item.get('links', []))
             self.searches.append(s)
-            if s.active:
-                threading.Thread(target=s.period_searching).start()
+            if s.active and not s.thread.is_alive():
+                s.thread.start()
