@@ -1,5 +1,6 @@
 import datetime
 
+from bs4 import BeautifulSoup
 from src.Models.Search import *
 
 class LinkedInSearch(Search):
