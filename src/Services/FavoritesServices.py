@@ -3,7 +3,7 @@ import os
 from src.Models.job_model import Job 
 import Data
 
-FAVORITES_FILE = "favorites.json"
+FAVORITES_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../Data/favorites.json"))
 
 class FavoritesService:
     def __init__(self):

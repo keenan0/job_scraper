@@ -1,7 +1,7 @@
 import json
 import os
 
-BLACKLIST_FILE = "blacklist.json"
+BLACKLIST_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../Data/blacklist.json"))
 
 class BlacklistService:
     def __init__(self):
@@ -20,6 +20,14 @@ class BlacklistService:
             json.dump(list(self.blacklisted_links), f, indent=4)
 
     def load_blacklist(self):
-        if os.path.exists(BLACKLIST_FILE):
+        os.makedirs(os.path.dirname(BLACKLIST_FILE), exist_ok=True)
+
+        if not os.path.exists(BLACKLIST_FILE):
+            with open(BLACKLIST_FILE, 'w') as f:
+                json.dump([], f)
+
+        if os.path.getsize(BLACKLIST_FILE) > 0:
             with open(BLACKLIST_FILE, 'r') as f:
                 self.blacklisted_links = set(json.load(f))
+        else:
+            self.blacklisted_links = set()
