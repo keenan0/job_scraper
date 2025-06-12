@@ -1,5 +1,6 @@
 import json
 import threading
+import os
 
 from src.Models.Search import Search
 from src.Models.ejobs_search import EjobsSearch
@@ -9,7 +10,7 @@ from src.Models.job_model import Job
 
 class SearchService:
     def __init__(self):
-        self.json_path = "Data/searches.json"
+        self.json_path = os.path.join(os.path.expanduser("~"), ".job_scraper", "searches.json")
         self.searches = []
         self.load_search()
 
@@ -42,7 +43,7 @@ class SearchService:
         self.save_searches()
         
         if new_search.active:
-            threading.Thread(target=new_search.period_searching).start()
+            new_search.thread.start()
 
         return new_search
 
@@ -68,7 +69,6 @@ class SearchService:
             with open(self.json_path, 'r') as f:
                 try:
                     data = json.load(f)
-                    return data
                 except json.decoder.JSONDecodeError:
                     print(f"File {self.json_path} is empty or contains invalid JSON")
                     return None
@@ -79,7 +79,6 @@ class SearchService:
             s = self.search_factory(
                 item['name'],
                 item['link'],
-                item['platform'],
                 item['frequency']
             )
             s.active = item.get('active', False)
@@ -89,4 +88,4 @@ class SearchService:
             s.links = set(item.get('links', []))
             self.searches.append(s)
             if s.active:
-                threading.Thread(target=s.period_searching).start()
+                s.thread.start()

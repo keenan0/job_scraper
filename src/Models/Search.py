@@ -1,7 +1,7 @@
 from src.Models.job_model import *
-from Testing.template_jobs import template_jobs
 from bs4 import BeautifulSoup
 import requests
+from threading import Thread
 import time
 from sortedcontainers import SortedSet
 import datetime
@@ -15,6 +15,7 @@ class Search:
         self.links = set()
         self.name = name
         self.active = True
+        self.thread = Thread(target=self.period_searching)
 
     def __str__(self):
         return f"{self.name}"
@@ -27,6 +28,8 @@ class Search:
             self.active = False
         else:
             self.active = True
+            if not self.thread.is_alive():
+                self.thread.start()
         return self.active
     
     def get_jobs(self):

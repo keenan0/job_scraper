@@ -1,7 +1,7 @@
 import json
 import os
 
-BLACKLIST_FILE = "blacklist.json"
+BLACKLIST_FILE = os.path.join(os.path.expanduser("~"), ".job_scraper", "blacklist.json")
 
 class BlacklistService:
     def __init__(self):
