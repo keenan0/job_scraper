@@ -77,6 +77,7 @@ class SearchService:
         for item in data:
             s = self.search_factory(
                 item['name'],
+                item['link'],
                 item['frequency']
             )
             s.active = item.get('active', False)
