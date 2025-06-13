@@ -2,22 +2,50 @@
 
 class JobApp {
   -SearchService : SearchService
+  -FavoritesService : FavoritesService
+  -BlacklistService : BlacklistService
   -jobUI : JobUI
   +__init__()
-  
 }
+
 class SearchService {
-  
   -search: List<Search>
   +addSearch(search: Search)
   +removeSearch(search: Search)
-  
 }
+
+class FavoritesService {
+  -favorites: List<Job>
+  +addFavorite(job: Job)
+  +removeFavorite(job: Job)
+  +getFavorites(): List<Job>
+}
+
+class BlacklistService {
+  -blacklisted: List<String>
+  +addToBlacklist(company: String)
+  +removeFromBlacklist(company: String)
+  +isBlacklisted(company: String): boolean
+}
+
 class JobUI {
   -jobManager : JobManager
+  -views : List<BaseView>
   +displayJobs()
   +addJobUI()
   +removeJobUI()
+}
+
+abstract class BaseView {
+  +render()
+}
+
+class SearchView extends BaseView {
+  +render() override
+}
+
+class FavoritesView extends BaseView {
+  +render() override
 }
 
 abstract class Search {
@@ -29,19 +57,21 @@ abstract class Search {
   -active: boolean
   +activate_deactivate()
   +{abstract} job_search()
-  
 }
+
 class HipoSearch extends Search {
   +job_search() override
 }
+
 class LinkedInSearch extends Search {
   +job_search() override
 }
+
 class EjobsSearch extends Search {
   +job_search() override
 }
 
-class Job   {
+class Job {
   -title : String
   -company: String
   -location: String
@@ -50,10 +80,14 @@ class Job   {
   -saved: boolean
   +__init__() 
 }
+
 JobApp "1" *-- "1" SearchService : uses >
+JobApp "1" *-- "1" FavoritesService : manages >
+JobApp "1" *-- "1" BlacklistService : filters >
 JobApp "1" *-- "1" JobUI : displays through >
 
 SearchService "1" o-- "*" Search : manages >
 Search "1" *-- "*" Job : generates >
+JobUI "1" *-- "*" BaseView : renders >
 
 @enduml

@@ -1,5 +1,4 @@
 # Job Scraper
-
 Un instrument inteligent cu interfață grafică pentru căutarea, filtrarea și salvarea joburilor de pe platforme populare precum eJobs, Hipo și LinkedIn.
 
 ## Descriere
@@ -66,6 +65,13 @@ job_scraper/
 13. Ca utilizator, vreau să pot adăuga un link nou ce urmează să fie procesat printr-un formular intuitiv.  
 14. Ca sistem, vreau să detectez automat modificările în anunțurile de joburi, astfel încât utilizatorii să aibă informații actualizate.
 
+## 2. Diagrame
+
+(UMLDiagram/second_diagram.png)
+(UMLDiagram/diagram_updated.png)
+
+
+
 ## 3. Source Control cu Git
 
 Se face un pull local din ramura `main`, apoi se creează un branch nou pentru dezvoltare. După finalizarea lucrului pe acel branch, modificările se fac merge local în `main`, iar în final se face push către remote.
@@ -77,6 +83,9 @@ Testele sunt organizate în directorul `Testing/`, unde sunt acoperite următoar
 - Scraper logic – validarea extragerii corecte a datelor de pe eJobs, Hipo și LinkedIn  
 - Blacklist și Favorites – verificarea funcționării corecte a mecanismelor de filtrare și salvare locală  
 - Interfață grafică – teste funcționale asupra componentelor de bază ale UI-ului
+
+## 5. Raportare bug si rezolvare cu pull request
+
 
 ## 6. Coding Standards
 
