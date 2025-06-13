@@ -1,8 +1,8 @@
 [
   {
-    "name": "Software eng",
-    "link": "https://www.ejobs.ro/locuri-de-munca/bucuresti/it-software/junior-software-developer",
-    "platform": "ejobs",
+    "name": "swe",
+    "link": "https://www.hipo.ro/locuri-de-munca/cautajob/Toate-Domeniile/Toate-Orasele/swe/",
+    "platform": "hipo",
     "frequency": 30,
     "active": true,
     "jobs": [],

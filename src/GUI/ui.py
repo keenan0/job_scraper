@@ -7,7 +7,7 @@ import threading
 
 from tkinter import StringVar
 import src
-from src.GUI.config import FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
+from src.GUI.config import APP_STYLE, FONT_FAMILY, FONT_SIZE, FONT_SIZE_BOLD
 from src.Models.Search import Search
 from src.Models.job_model import Job
 from src.Services.SearchServices import SearchService
@@ -25,7 +25,7 @@ class JobUI:
         self.blacklist_service = blacklist_service
         self.root.title("MDS - Job Scraper")
         
-        self.style = tb.Style('darkly') # Sau 'darkly' etc.
+        self.style = tb.Style(APP_STYLE)
         self.style_config = {
             'FONT_FAMILY': FONT_FAMILY, 
             'FONT_SIZE': FONT_SIZE,

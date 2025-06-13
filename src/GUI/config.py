@@ -1,3 +1,4 @@
 FONT_FAMILY = "Segoe UI"
 FONT_SIZE = 16
 FONT_SIZE_BOLD = 13
+APP_STYLE = 'darkly'

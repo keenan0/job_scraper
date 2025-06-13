@@ -1,21 +1,33 @@
+from datetime import datetime
+
 class Job:
-    def __init__(self, title, company, data, link, fetch_date, description = None):
+    def __init__(
+        self,
+        title: str,
+        company: str,
+        data: datetime,
+        link: str,
+        fetch_date: datetime,
+        description: str | None = None,
+        saved: bool = False,
+        applied: bool = False,
+    ):
         self.title = title
         self.company = company
         self.data = data
         self.link = link
         self.description = description
-        self.saved = False
-        self.applied = False
+        self.saved = saved
+        self.applied = applied
         self.fetch_date = fetch_date
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.saved} {self.title} {self.company}  {self.link}"
 
-    def __lt__(self, other):
+    def __lt__(self, other: "Job") -> bool:
         return self.data > other.data
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             "title": self.title,
             "company": self.company,
@@ -24,5 +36,5 @@ class Job:
             "description": self.description,
             "saved": self.saved,
             "applied": self.applied,
-            "fetch_date": self.fetch_date.isoformat() if self.fetch_date else None
+            "fetch_date": self.fetch_date.isoformat() if self.fetch_date else None,
         }
